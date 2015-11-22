@@ -1,4 +1,4 @@
-import urllib
+import urllib2
 import boto3
 
 s3 = boto3.client('s3')
@@ -11,8 +11,8 @@ def lambda_handler(event, context):
     
     for url in urls:
         try:
-            aggregated_mp3s += urllib.urlopen(url).read()  # concatenating mp3s here
-        except URLError as e:
+            aggregated_mp3s += urllib2.urlopen(url).read()  # concatenating mp3s here
+        except urllib2.URLError as e:
             pass
     
     response = s3.put_object(
