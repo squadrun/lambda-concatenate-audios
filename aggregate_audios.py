@@ -1,24 +1,22 @@
 import urllib2
 import boto3
+import logging
 
 s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
+    logger = logging.getLogger()
     urls = event['urls']  # converts list as string to list
     key = event['filename']
     bucket = event['bucket']
     aggregated_mp3s = ""  # would store audio bytes as string
     
-    print urls
-    
     for url in urls:
-        print url
         try:
             aggregated_mp3s += urllib2.urlopen(url).read()  # concatenating mp3s here
-        except urllib2.URLError as e:
-            print e.reason
-        except ValueError as e:
-            print "Not a Valid URL"
+        except Exception as exc:
+            logger.error("Got error while trying to read url: {0} error: {1}".format(url, exc))
+            raise
     
     response = s3.put_object(
             ACL='public-read',
@@ -27,5 +25,5 @@ def lambda_handler(event, context):
             Key=key,
             ContentType="audio/mpeg"
         )
-        
-    print response
+
+    return response
